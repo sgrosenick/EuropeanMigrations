@@ -4,6 +4,21 @@
 //pseudo-global variables
 var attrArray = ["Russian Federation", "Ukraine", "Kazakhstan", "Poland", "Romania"]; //list of attributes
 var expressed = attrArray[0]; //initial attribute
+    
+//chart frame dimensons
+var chartWidth = window.innerWidth * 0.425,
+    chartHeight = 473,
+    leftPadding = 25,
+    rightPadding = 2,
+    topBottomPadding = 5,
+    chartInnerWidth = chartWidth - leftPadding - rightPadding,
+    chartInnerHeight = chartHeight - topBottomPadding * 2,
+    translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
+
+//create a scale to size bars proportionally to frame and for axis
+var yScale = d3.scaleLinear()
+    .range([463, 0])
+    .domain([0, 5000]);
 
 //begin script when window loads
 window.onload = setMap();
@@ -36,7 +51,7 @@ function setMap(){
     
     //use queue to parallelize asynchronous data loading
     d3.queue()
-        .defer(d3.csv, "data/EuropeMigrantData2015.csv") //load attributes from csv
+        .defer(d3.csv, "data/EuropeMigrantData2015_mini.csv") //load attributes from csv
         .defer(d3.json, "data/EuropeCountries.topojson") //load choropleth data
         .defer(d3.json, "data/WorldCountries.topojson") //load background data
         .await(callback);
@@ -67,14 +82,17 @@ function setMap(){
         
         //add coordinated visualization to the map
         setChart(csvData, colorScale);
+        
+        //add dropdown interaction
+        createDropdown(csvData);
     };
 };
     
 //function to create coordinated bar chart
 function setChart(csvData, colorScale){
     //chart frame dimensions
-    var chartWidth = window.innerWidth * 0.435,
-        chartHeight = 460;
+    //var chartWidth = window.innerWidth * 0.435,
+    //    chartHeight = 460;
     
     //create a second svg element to hold the bar chart
     var chart = d3.select("body")
@@ -83,10 +101,17 @@ function setChart(csvData, colorScale){
         .attr("height", chartHeight)
         .attr("class", "chart");
     
+    //create a rectangle for chart background fill
+    var chartBackground = chart.append("rect")
+        .attr("class", "chartBackground")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+        .attr("transform", translate);
+    
     //create a scale to size bars proportionally to frame
-    var yScale = d3.scaleLinear()
-        .range([0, chartHeight])
-        .domain([0, 100000]);
+    //var yScale = d3.scaleLinear()
+    //    .range([0, chartHeight])
+    //    .domain([-600, 20000]);
     
     //set bars for each province
     var bars = chart.selectAll(".bars")
@@ -94,39 +119,39 @@ function setChart(csvData, colorScale){
         .enter()
         .append("rect")
         .sort(function(a, b){
-            return a[expressed]-b[expressed];
+            return b[expressed]-a[expressed];
         })
         .attr("class", function(d){
             return "bars " + d.country;
         })
-        .attr("width", chartWidth / csvData.length - 1)
+        .attr("width", chartInnerWidth / csvData.length - 1)
         .attr("x", function(d, i){
-            return i * (chartWidth / csvData.length);
+            return i * (chartInnerWidth / csvData.length) + leftPadding;
         })
         .attr("height", function(d){
-            return yScale(parseFloat(d[expressed]));
+            return 463 - yScale(parseFloat(d[expressed]));
         })
         .attr("y", function(d){
-            return chartHeight - yScale(parseFloat(d[expressed]));
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
         })
         .style("fill", function(d){
             return choropleth(d, colorScale);
         });
     
     //annotate bars with attribute value text
-    var numbers = chart.selectAll(".numbers")
+   /* var numbers = chart.selectAll(".numbers")
         .data(csvData)
         .enter()
         .append("text")
         .sort(function(a, b){
-            return a[expressed]-b[expressed];
+            return b[expressed]-a[expressed];
         })
         .attr("class", function(d){
             return "numbers " + d.country;
         })
         .attr("text-anchor", "middle")
         .attr("x", function(x, i){
-            var fraction = chartWidth / csvData.length;
+            var fraction = chartInnerWidth / csvData.length;
             return i * fraction + (fraction - 1) / 2;
         })
         .attr("y", function(d){
@@ -134,14 +159,105 @@ function setChart(csvData, colorScale){
         })
         .text(function(d){
             return d[expressed];
-        });
+        });*/
     
     //create a text element for chart title
     var chartTitle = chart.append("text")
-        .attr("x", 20)
+        .attr("x", 40)
         .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Number of People from " + expressed + " in each country");
+        .text("Number of Migrants from " + expressed + " in each country (in thousands)");
+    
+    //create vertical axis generator
+    var yAxis = d3.axisLeft()
+        .scale(yScale)
+        .orient("left");
+    
+    //place axis
+    var axis = chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", translate)
+        .call(yAxis);
+    
+    //create frame for chart border
+    var chartFrame = chart.append("rect")
+        .attr("class", "chartFrame")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+    
+    updateChart(bars, csvData.length, colorScale);
+};
+    
+//function to position, size, and color bars in chart
+function updateChart(bars, n, colorScale){
+    //position bars
+    bars.attr("x", function(d, i){
+        return i * (chartInnerWidth / n) + leftPadding;
+    })
+    //size/resize bars
+    .attr("height", function(d, i){
+        return 600 - yScale(parseFloat(d[expressed]));
+    })
+    .attr("y", function(d, i){
+        return yScale(parseFloat(d[expressed])) + topBottomPadding;
+    })
+    //color/recolor bars
+    .style("fill", function(d){
+        return choropleth(d, colorScale);
+    });
+    
+    //updates chart title
+    var chartTitle = d3.select(".chartTitle")
+        .text("Number of Immigrants from " + expressed + " in each country (in thousands)");
+};
+    
+//function to create a dropdown menu for attribute information
+function createDropdown(csvData){
+    //add select element
+    var dropdown = d3.select("body")
+        .append("select")
+        .attr("class", "dropdown")
+        .on("change", function(){
+            changeAttribute(this.value, csvData)
+        });
+    
+    //add initial option
+    var titleOption  = dropdown.append("option")
+        .attr("class", "titleOption")
+        .attr("disabled", "true")
+        .text("Select Immigrant Country");
+    
+    //add attribute name options
+    var attrOptions = dropdown.selectAll("attrOptions")
+        .data(attrArray)
+        .enter()
+        .append("option")
+        .attr("value", function(d){ return d })
+        .text(function(d){ return d });
+};
+    
+//dropdown change listener handler
+function changeAttribute(attribute, csvData){
+    //change the expressed attribute
+    expressed = attribute;
+    
+    //recreate the color scale
+    var colorScale = makeColorScale(csvData);
+    
+    //recolor enumeration units
+    var regions = d3.selectAll(".regions")
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale)
+        });
+    
+    //re-sort, resize, and recolor bars
+    var bars = d3.selectAll(".bars")
+        //re-sort bars
+        .sort(function(a, b){
+            return b[expressed] - a[expressed];
+        });
+    
+    updateChart(bars, csvData.length, colorScale);
 };
     
 function setGraticule(map, path){

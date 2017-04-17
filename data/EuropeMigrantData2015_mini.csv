@@ -1,11 +1,11 @@
-Country,CountryCode,Total,SmplTotal,Russian Federation,Ukraine,Kazakhstan,Poland,Romania
+sovereignt,CountryCode,Total,SmplTotal,Russian Federation,Ukraine,Kazakhstan,Poland,Romania
 Russia,643,11643.3,5863.4,0,3270,2560.3,29.2,3.9
 Germany,276,12005.7,4878.7,1080.5,261.1,1016.8,1930.1,590.2
 Ukraine,804,4834.9,3502.1,3276.8,0,222.2,3.1,0
 Italy,380,5788.9,1447.1,80.8,222.2,3.9,118.6,1021.6
 Belarus,112,1082.9,978.6,682.4,225.7,70,0.5,0
 Spain,724,5853,875.6,73.3,77.4,1.8,65,658.1
-United Kingdom,826,8543.1,863.8,42.5,23.4,5.4,703.1,89.4
+United_Kingdom,826,8543.1,863.8,42.5,23.4,5.4,703.1,89.4
 France,250,7784.4,283.9,64,15.9,2.6,111.6,89.8
 Poland,616,619.4,251.7,38.1,206.5,4.6,0,2.5
 Hungary,348,449.6,246,3.3,34.4,0.5,3.2,204.6

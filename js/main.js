@@ -6,7 +6,7 @@ var attrArray = ["Russian Federation", "Ukraine", "Kazakhstan", "Poland", "Roman
 var expressed = attrArray[0]; //initial attribute
     
 //chart frame dimensons
-var chartWidth = window.innerWidth * 0.43,
+var chartWidth = window.innerWidth * 0.48,
     chartHeight = 473,
     leftPadding = 40,
     rightPadding = 2,
@@ -17,7 +17,7 @@ var chartWidth = window.innerWidth * 0.43,
     
 //create a scale to size bars proportionally to frame and for axis
 var yScale = d3.scaleLinear()
-    .range([463, 0])
+    .range([463, 60])
     .domain([0, 3500]);
 
 //begin script when window loads
@@ -27,7 +27,7 @@ window.onload = setMap();
 function setMap(){
 
     //map frame dimensions
-    var width = window.innerWidth * 0.5,
+    var width = window.innerWidth * 0.47,
         height = 473;
     
     //create new svg container for the map
@@ -48,6 +48,12 @@ function setMap(){
     var path = d3.geoPath()
         .projection(projection);
     
+    //create map title
+    var mapTitle = map.append("text")
+        .attr("x", 58)
+        .attr("y", 35)
+        .attr("class", "mapTitle")
+        .text("Immigrants Into Europe, 2015");
     
     //use queue to parallelize asynchronous data loading
     d3.queue()
@@ -82,9 +88,12 @@ function setMap(){
         
         //add coordinated visualization to the map
         setChart(csvData, colorScale);
-        
+    
         //add dropdown interaction
-        createDropdown(csvData);
+        //createDropdown(csvData);
+        
+        //add info window
+        desWindow();
     };
 };
     
@@ -142,35 +151,18 @@ function setChart(csvData, colorScale){
     var desc = bars.append("desc")
         .text('{"stroke": "none", "stroke-width": "0px"}');
     
-    //annotate bars with attribute value text
-    /*var numbers = chart.selectAll(".numbers")
-        .data(csvData)
-        .enter()
-        .append("text")
-        .sort(function(a, b){
-            return b[expressed]-a[expressed];
-        })
-        .attr("class", function(d){
-            return "numbers " + d.country;
-        })
-        .attr("text-anchor", "middle")
-        .attr("x", function(x, i){
-            var fraction = chartInnerWidth / csvData.length;
-            return i * fraction + (fraction - 1) / 2;
-        })
-        .attr("y", function(d){
-            return chartHeight - yScale(parseFloat(d[expressed])) + 15;
-        })
-        .text(function(d){
-            return d[expressed];
-        });*/
-    
     //create a text element for chart title
     var chartTitle = chart.append("text")
-        .attr("x", 52)
-        .attr("y", 25)
+        .attr("x", 70)
+        .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Number of Migrants from " + expressed + " in each country (in thousands)");
+        .text("Number of Migrants from");
+    
+    var secondTitle = chart.append("text")
+        .attr("x", 497)
+        .attr("y", 40)
+        .attr("class", "chartTitle")
+        .text("in each country (in thousands)");
     
     //create vertical axis generator
     var yAxis = d3.axisLeft(yScale);
@@ -188,7 +180,25 @@ function setChart(csvData, colorScale){
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
     
+    createDropdown(csvData);
     updateChart(bars, csvData.length, colorScale);
+};
+
+//create description window
+function desWindow(){
+    //create a new svg element
+    var infoWindow = d3.select("body")
+        .append("svg")
+        .attr("width", window.innerWidth * 0.964)
+        .attr("height", 40)
+        .attr("class", "infoWindow");
+    
+    //create text
+    var paragraph = infoWindow.append("text")
+        .attr("x", 10)
+        .attr("y", 25)
+        .attr("class", "windowText")
+        .text("This map depeicts the number of people who immigrated into Europe in 2015. The data includes the five countries that the most people emigrated from and which countries they moved to. Data from United Nations.");
 };
     
 //function to position, size, and color bars in chart
@@ -210,8 +220,8 @@ function updateChart(bars, n, colorScale){
         });
     
     //updates chart title
-    var chartTitle = d3.select(".chartTitle")
-        .text("People from " + expressed + " who immigrated to each country in 2015 (in thousands)");
+    /*var chartTitle = d3.select(".chartTitle")
+        .text("People from " + expressed + " who immigrated to each country in 2015 (in thousands)");*/
 };
     
 //function to create a dropdown menu for attribute information
@@ -351,7 +361,7 @@ function setEnumerationUnits(europeCountries, map, path, colorScale){
 function highlight(props){
     //change stroke
     var selected = d3.selectAll("." + props.sovereignt)
-        .style("stroke", "blue")
+        .style("stroke", "white")
         .style("stroke-width", "2");
     
     //call the lable
@@ -430,11 +440,11 @@ function moveLabel(){
 //function to create color scale generator
 function makeColorScale(data){
     var colorClasses = [
-        "#D4B9DA",
-        "#C994C7",
-        "#DF65B0",
-        "#DD1C77",
-        "#980043"
+        "#f1eef6",
+        "#bdc8e1",
+        "#74a9cf",
+        "#2b8cbe",
+        "#045a8d"
     ];
     
     //create color scale generator

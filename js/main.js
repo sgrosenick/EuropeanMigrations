@@ -198,7 +198,7 @@ function desWindow(){
         .attr("x", 10)
         .attr("y", 25)
         .attr("class", "windowText")
-        .text("This map depeicts the number of people who immigrated into Europe in 2015. The data includes the five countries that the most people emigrated from and which countries they moved to. Data from United Nations.");
+        .text("This map depeicts the number of people who immigrated within Europe in 2015. The data includes the five countries that the most people emigrated from and which countries they moved to. Data from United Nations.");
 };
     
 //function to position, size, and color bars in chart
